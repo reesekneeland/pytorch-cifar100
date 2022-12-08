@@ -12,8 +12,9 @@ import numpy
 import torch
 from torch.optim.lr_scheduler import _LRScheduler
 import torchvision
-import torchvision.transforms as transforms
+from torchvision import datasets, models, transforms
 from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
 
 
 def get_network(args):
@@ -183,12 +184,56 @@ def get_training_dataloader(mean, std, batch_size=16, num_workers=2, shuffle=Tru
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
     ])
-    #cifar100_training = CIFAR100Train(path, transform=transform_train)
-    cifar100_training = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+    path = "/home/csci5527/kneel027/Artificial-Image-Classification/datasets/sd_cifar100"
+    #Torchvision ground truth dataset
+    # cifar100_training = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+
+    #Artificial generation ImageFolder dataset
+    # cifar100_training = torchvision.datasets.ImageFolder(path,  transform=transform_train)
+
+    #Aritificial generation ImageFolder dataset with artificial validation data
+    cifar100 = torchvision.datasets.ImageFolder(path,  transform=transform_train)
+    random_seed = 1093
+    torch.manual_seed(random_seed)
+    cifar100_training, _ = train_test_split(cifar100, test_size=0.3, random_state=random_seed)
+
+
+    print("TRAIN_LEN", len(cifar100_training))
     cifar100_training_loader = DataLoader(
         cifar100_training, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size)
 
     return cifar100_training_loader
+
+def get_val_dataloader(mean, std, batch_size=16, num_workers=2, shuffle=True):
+    """ return validation dataloader
+    Args:
+        mean: mean of cifar100 test dataset
+        std: std of cifar100 test dataset
+        path: path to cifar100 test python dataset
+        batch_size: dataloader batchsize
+        num_workers: dataloader num_works
+        shuffle: whether to shuffle
+    Returns: cifar100_test_loader:torch dataloader object
+    """
+
+    transform_val = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ])
+    path = "/home/csci5527/kneel027/Artificial-Image-Classification/datasets/sd_cifar100"
+
+    #Artificial Generation Imagefolder Dataset (only to be used for validation step)
+    cifar100 = torchvision.datasets.ImageFolder(path,  transform=transform_val)
+    random_seed = 1093
+    torch.manual_seed(random_seed)
+    _, cifar100_val = train_test_split(cifar100, test_size=0.3, random_state=random_seed)
+
+
+    print("VAL_LEN", len(cifar100_val))
+    cifar100_val_loader = DataLoader(
+        cifar100_val, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size)
+
+    return cifar100_val_loader
 
 def get_test_dataloader(mean, std, batch_size=16, num_workers=2, shuffle=True):
     """ return training dataloader
@@ -206,8 +251,22 @@ def get_test_dataloader(mean, std, batch_size=16, num_workers=2, shuffle=True):
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
     ])
-    #cifar100_test = CIFAR100Test(path, transform=transform_test)
-    cifar100_test = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+    path = "/home/csci5527/kneel027/Artificial-Image-Classification/datasets/sd_cifar100"
+    test_path = "/home/csci5527/kneel027/Artificial-Image-Classification/datasets/cifar100_test"
+    #Torchvision ground truth dataset
+    # cifar100_test = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+
+    #Ground Truth Imagefolder dataset
+    cifar100_test = torchvision.datasets.ImageFolder(test_path,  transform=transform_test)
+
+    #Artificial Generation Imagefolder Dataset (only to be used for validation step)
+    # cifar100 = torchvision.datasets.ImageFolder(path,  transform=transform_test)
+    # random_seed = 1093
+    # torch.manual_seed(random_seed)
+    # _, cifar100_test = train_test_split(cifar100, test_size=0.166666, random_state=random_seed)
+
+
+    print("TEST_LEN", len(cifar100_test))
     cifar100_test_loader = DataLoader(
         cifar100_test, shuffle=shuffle, num_workers=num_workers, batch_size=batch_size)
 

@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from conf import settings
-from utils import get_network, get_training_dataloader, get_test_dataloader, WarmUpLR, \
+from utils import get_network, get_training_dataloader, get_test_dataloader, get_val_dataloader, WarmUpLR, \
     most_recent_folder, most_recent_weights, last_epoch, best_acc_weights
 
 def train(epoch):
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         shuffle=True
     )
 
-    cifar100_test_loader = get_test_dataloader(
+    cifar100_test_loader = get_val_dataloader(
         settings.CIFAR100_TRAIN_MEAN,
         settings.CIFAR100_TRAIN_STD,
         num_workers=4,
